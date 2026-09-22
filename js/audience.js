@@ -16,6 +16,7 @@ const startCameraButton = document.querySelector('#startCameraButton');
 const startDemoButton = document.querySelector('#startDemoButton');
 const cameraSelect = document.querySelector('#cameraSelect');
 const playState = document.querySelector('#playState');
+const powerStatus = document.querySelector('#powerStatus');
 const audienceStatus = document.querySelector('#audienceStatus');
 
 const CAMERA_DEVICE_STORAGE_KEY = 'audience.cameraDeviceId';
@@ -302,6 +303,9 @@ function animate(timestamp) {
   }
   renderer.draw(game, crowd, settings, activeSource(), sourceReady(), latestVision, game.paddleIntent(), delta);
   playState.textContent = !game.running ? 'ready' : game.paused ? 'paused' : game.missResetAt ? 'next ball' : 'playing';
+  const strengthLabel = game.strengthSeconds > 0 ? `strength // ${Math.ceil(game.strengthSeconds)}s` : '';
+  if (powerStatus.textContent !== strengthLabel) powerStatus.textContent = strengthLabel;
+  powerStatus.hidden = !strengthLabel;
   requestAnimationFrame(animate);
 }
 

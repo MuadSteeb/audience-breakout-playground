@@ -15,6 +15,7 @@ function interpolateColor(start, end, amount) {
 const ACCENT = '#5fed83';
 const TRAIL_COLORS = ['#1a7f37', '#583af7', '#c05200'];
 const BURST_COLORS = ['#5fed83', '#bba00a', '#583af7', '#c05200', '#f73678', '#ae85ff'];
+const STRENGTH_COLORS = ['#ae85ff', '#f73678', '#583af7'];
 const PIXEL_DIGITS = [
   ['111', '101', '101', '101', '111'],
   ['010', '110', '010', '010', '111'],
@@ -87,7 +88,7 @@ export class GameRenderer {
       }
     }
     if (settings.appearance.showBall && game.running) {
-      context.fillStyle = settings.appearance.ballColor;
+      context.fillStyle = game.strengthSeconds > 0 ? '#583af7' : settings.appearance.ballColor;
       context.fillRect(
         game.ball.x - game.ball.radius, game.ball.y - game.ball.radius,
         game.ball.radius * 2, game.ball.radius * 2,
@@ -421,7 +422,10 @@ export class GameRenderer {
 
   drawBrick(brick, settings) {
     const context = this.context;
-    const color = interpolateColor(
+    const color = brick.type === 'strength' ? STRENGTH_COLORS[brick.variant]
+      : brick.type === 'bonus' ? ACCENT
+        : brick.type === 'error' ? '#f41e1e'
+          : interpolateColor(
       settings.appearance.brickLowColor,
       settings.appearance.brickHighColor,
       brick.shade / 4,
@@ -430,5 +434,16 @@ export class GameRenderer {
     context.fillRect(brick.x, brick.y, brick.width, brick.height);
     context.strokeStyle = '#d9dfdb';
     context.strokeRect(brick.x + 0.5, brick.y + 0.5, brick.width - 1, brick.height - 1);
+    const symbol = { strength: '^', bonus: '+', error: '-' }[brick.type];
+    if (symbol) {
+      context.save();
+      context.fillStyle = brick.type === 'bonus' || (brick.type === 'strength' && brick.variant === 0)
+        ? '#343d37' : '#ffffff';
+      context.font = `bold ${Math.round(brick.height * 0.7)}px "Mona Sans Mono", monospace`;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(symbol, brick.x + brick.width / 2, brick.y + brick.height / 2);
+      context.restore();
+    }
   }
 }

@@ -18,6 +18,8 @@ export class BreakoutGame {
     this.paddle = { x: width / 2 - 70, y: 0, width: 140, height: 20, targetX: width / 2 - 70, travelSpeed: 0 };
     this.ball = { x: 0, y: 0, radius: 12, speedX: 0, speedY: 0 };
     this.ballGeneration = 0;
+    this.strengthSeconds = 0;
+    this.paddleWidthBonus = 0;
     this.lastVisionBias = 0;
     this.lastInDeadZone = true;
   }
@@ -26,7 +28,7 @@ export class BreakoutGame {
     const previousSpeed = Math.hypot(this.ball.speedX, this.ball.speedY);
     const previousBaseSpeed = this.settings?.physics.ballSpeed;
     this.settings = settings;
-    this.paddle.width = settings.physics.paddleWidth;
+    this.resizePaddle(settings.physics.paddleWidth + this.paddleWidthBonus);
     this.paddle.height = settings.physics.paddleHeight;
     this.paddle.y = this.height - this.paddle.height - this.width / 48;
     this.paddle.x = clamp(this.paddle.x, 18, this.width - this.paddle.width - 18);
@@ -62,8 +64,11 @@ export class BreakoutGame {
     const brickWidth = this.width / cols;
     const brickHeight = brickWidth;
     this.bricks = [];
-    for (let row = 0; row < rows; row += 1) {
-      for (let col = 0; col < cols; col += 1) {
+    this.strengthSeconds = 0;
+    this.paddleWidthBonus = 0;
+    this.resizePaddle(this.settings.physics.paddleWidth);
+    for (let row = 2; row < rows; row += 1) {
+      for (let col = 2; col < cols - 2; col += 1) {
         this.bricks.push({
           x: col * brickWidth,
           y: row * brickHeight,
@@ -71,8 +76,40 @@ export class BreakoutGame {
           height: brickHeight,
           alive: true,
           shade: (row + col + row * 2) % 5,
+          type: 'normal',
         });
       }
+    }
+    const shuffled = [...this.bricks];
+    for (let index = shuffled.length - 1; index > 0; index -= 1) {
+      const other = Math.floor(Math.random() * (index + 1));
+      [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
+    }
+    const specialCount = Math.round(this.bricks.length * 0.05);
+    ['strength', 'bonus', 'error'].forEach((type, group) => {
+      for (let index = 0; index < specialCount; index += 1) {
+        const brick = shuffled[group * specialCount + index];
+        brick.type = type;
+        if (type === 'strength') brick.variant = index % 3;
+      }
+    });
+  }
+
+  resizePaddle(width) {
+    const nextWidth = clamp(width, 60, Math.min(360, this.width - 36));
+    const offset = (this.paddle.width - nextWidth) / 2;
+    this.paddle.width = nextWidth;
+    this.paddle.x = clamp(this.paddle.x + offset, 18, this.width - nextWidth - 18);
+    this.paddle.targetX = clamp(this.paddle.targetX + offset, 18, this.width - nextWidth - 18);
+    this.paddleWidthBonus = nextWidth - this.settings.physics.paddleWidth;
+  }
+
+  applyBrickEffect(brick) {
+    if (brick.type === 'strength') {
+      this.strengthSeconds = 10;
+    } else if (brick.type === 'bonus' || brick.type === 'error') {
+      const direction = brick.type === 'bonus' ? 1 : -1;
+      this.resizePaddle(this.paddle.width + direction * this.width / 48);
     }
   }
 
@@ -87,6 +124,7 @@ export class BreakoutGame {
 
   resetBall() {
     this.ballGeneration += 1;
+    this.strengthSeconds = 0;
     const speed = this.settings?.physics.ballSpeed || 170;
     this.ball.x = this.paddle.x + this.paddle.width / 2;
     this.ball.y = this.paddle.y - this.ball.radius - 4;
@@ -180,6 +218,7 @@ export class BreakoutGame {
     // Time-based easing filters target jitter without depending on frame rate or ball substeps.
     const paddleFollow = -Math.expm1(-stepDelta / PADDLE_RESPONSE_SECONDS);
     for (let step = 0; step < steps; step += 1) {
+      this.strengthSeconds = Math.max(0, this.strengthSeconds - deltaSeconds / steps);
       const maxPaddleStep = this.paddle.travelSpeed * stepDelta;
       this.paddle.x += clamp(
         (this.paddle.targetX - this.paddle.x) * paddleFollow,
@@ -194,7 +233,9 @@ export class BreakoutGame {
         break;
       }
       this.handlePaddleCollision();
+      const generation = this.ballGeneration;
       this.handleBrickCollisions();
+      if (generation !== this.ballGeneration) break;
     }
   }
 
@@ -255,24 +296,29 @@ export class BreakoutGame {
       brick.alive = false;
       this.score += 1;
       this.audio.play('brick');
-      const overlaps = [
-        { axis: 'x', value: ball.x + ball.radius - brick.x },
-        { axis: 'x', value: brick.x + brick.width - (ball.x - ball.radius) },
-        { axis: 'y', value: ball.y + ball.radius - brick.y },
-        { axis: 'y', value: brick.y + brick.height - (ball.y - ball.radius) },
-      ];
-      const collision = overlaps.reduce((minimum, item) => item.value < minimum.value ? item : minimum);
-      if (collision.axis === 'x') {
-        ball.speedX *= -1;
-      } else {
-        ball.speedY *= -1;
+      this.applyBrickEffect(brick);
+      const piercing = this.strengthSeconds > 0;
+      if (!piercing) {
+        const overlaps = [
+          { axis: 'x', value: ball.x + ball.radius - brick.x },
+          { axis: 'x', value: brick.x + brick.width - (ball.x - ball.radius) },
+          { axis: 'y', value: ball.y + ball.radius - brick.y },
+          { axis: 'y', value: brick.y + brick.height - (ball.y - ball.radius) },
+        ];
+        const collision = overlaps.reduce((minimum, item) => item.value < minimum.value ? item : minimum);
+        if (collision.axis === 'x') {
+          ball.speedX *= -1;
+        } else {
+          ball.speedY *= -1;
+        }
       }
       if (this.bricks.every((item) => !item.alive)) {
         this.audio.play('clear');
         this.createBricks();
         this.resetBall();
+        return;
       }
-      return;
+      if (!piercing) return;
     }
   }
 
@@ -281,6 +327,7 @@ export class BreakoutGame {
       running: this.running,
       paused: this.paused,
       score: this.score,
+      strengthSeconds: this.strengthSeconds,
       ball: { x: this.ball.x, y: this.ball.y },
       paddle: { x: this.paddle.x, width: this.paddle.width },
     };

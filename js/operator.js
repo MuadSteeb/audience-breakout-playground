@@ -146,6 +146,9 @@ function updateRuntime(runtime) {
     return;
   }
   gameStateEl.textContent = !runtime.running ? 'Stopped' : runtime.paused ? 'Paused' : 'Running';
+  if (runtime.strengthSeconds > 0) {
+    gameStateEl.textContent += ` / Strength ${Math.ceil(runtime.strengthSeconds)}s`;
+  }
   cameraStateEl.textContent = runtime.cameraState || 'Offline';
   operatorScore.textContent = String(runtime.score ?? 0);
   visionCounts.textContent = `${runtime.vision?.left ?? 0} / ${runtime.vision?.right ?? 0}`;

@@ -159,6 +159,7 @@ h1 { margin-bottom: 0; letter-spacing: -0.04em; }
   text-transform: uppercase;
 }
 .play-state::before { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 7px 2px 0; background: currentColor; }
+.power-status { color: #583af7; margin-right: 1rem; }
 .startup-panel {
   position: absolute;
   z-index: 4;
