@@ -1,4 +1,5 @@
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
+export const GRID_COLUMNS = 40;
 export const CHANNEL_NAME = 'audience-breakout-v1';
 export const SETTINGS_STORAGE_KEY = 'audience-breakout:settings';
 export const PRESETS_STORAGE_KEY = 'audience-breakout:presets';
@@ -33,11 +34,11 @@ export const DEFAULT_SETTINGS = Object.freeze({
     volume: 0.7,
   },
   physics: {
-    ballSpeed: 170,
+    ballSpeed: 85,
     speedUp: 1.02,
     timeScale: 1,
     ballSize: 20,
-    paddleSpeed: 700,
+    paddleSpeed: 350,
     paddleWidth: 140,
     paddleHeight: 20,
   },

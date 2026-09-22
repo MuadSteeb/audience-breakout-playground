@@ -1,3 +1,5 @@
+import { GRID_COLUMNS } from './defaults.js';
+
 function hexToRgb(hex) {
   return [
     Number.parseInt(hex.slice(1, 3), 16),
@@ -82,7 +84,7 @@ export class GameRenderer {
       context.fillStyle = settings.appearance.paddleColor;
       context.fillRect(game.paddle.x, game.paddle.y, game.paddle.width, game.paddle.height);
       context.fillStyle = '#d9dfdb';
-      const cell = width / 48;
+      const cell = width / GRID_COLUMNS;
       for (let x = cell; x < game.paddle.width; x += cell) {
         context.fillRect(game.paddle.x + x, game.paddle.y, 1, game.paddle.height);
       }
@@ -107,7 +109,7 @@ export class GameRenderer {
 
   drawGrid() {
     const context = this.context;
-    const cell = this.canvas.width / 48;
+    const cell = this.canvas.width / GRID_COLUMNS;
     context.beginPath();
     context.strokeStyle = '#d9dfdb';
     context.lineWidth = 1;
@@ -177,7 +179,7 @@ export class GameRenderer {
 
   drawEffects(game, settings) {
     const context = this.context;
-    const cell = this.canvas.width / 48;
+    const cell = this.canvas.width / GRID_COLUMNS;
     context.save();
     for (const point of this.trail) {
       const age = this.effectTime - point.at;

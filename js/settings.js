@@ -99,7 +99,7 @@ function normalizeValue(value, rule, fallback) {
 }
 
 function migrateSettings(candidate) {
-  if (!candidate || !Number.isInteger(candidate.schemaVersion) || candidate.schemaVersion >= 3) {
+  if (!candidate || !Number.isInteger(candidate.schemaVersion) || candidate.schemaVersion >= 4) {
     return candidate;
   }
   const migrated = cloneSettings(candidate);
@@ -118,14 +118,18 @@ function migrateSettings(candidate) {
     'physics.ballSize': 24,
     'physics.paddleWidth': 168,
     'physics.paddleHeight': 18,
-  } : {
+  } : candidate.schemaVersion < 3 ? {
     'appearance.ballColor': '#ffffff',
     'appearance.paddleColor': '#ffffff',
     'appearance.stageColor': '#000000',
     'appearance.textColor': '#ffffff',
     'appearance.brickLowColor': '#363a37',
     'appearance.brickHighColor': '#454945',
-  };
+  } : {};
+  Object.assign(oldDefaults, {
+    'physics.ballSpeed': 170,
+    'physics.paddleSpeed': 700,
+  });
   for (const [path, previous] of Object.entries(oldDefaults)) {
     if (getPath(migrated, path) === previous) {
       setPath(migrated, path, getPath(DEFAULT_SETTINGS, path));

@@ -1,3 +1,5 @@
+import { DEFAULT_SETTINGS, GRID_COLUMNS } from './defaults.js';
+
 function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
@@ -30,7 +32,7 @@ export class BreakoutGame {
     this.settings = settings;
     this.resizePaddle(settings.physics.paddleWidth + this.paddleWidthBonus);
     this.paddle.height = settings.physics.paddleHeight;
-    this.paddle.y = this.height - this.paddle.height - this.width / 48;
+    this.paddle.y = this.height - this.paddle.height - this.width / GRID_COLUMNS;
     this.paddle.x = clamp(this.paddle.x, 18, this.width - this.paddle.width - 18);
     this.paddle.targetX = clamp(this.paddle.targetX, 18, this.width - this.paddle.width - 18);
     this.ball.radius = settings.physics.ballSize / 2;
@@ -59,8 +61,8 @@ export class BreakoutGame {
   }
 
   createBricks() {
-    const rows = 9;
-    const cols = 48;
+    const rows = 7;
+    const cols = GRID_COLUMNS;
     const brickWidth = this.width / cols;
     const brickHeight = brickWidth;
     this.bricks = [];
@@ -85,14 +87,15 @@ export class BreakoutGame {
       const other = Math.floor(Math.random() * (index + 1));
       [shuffled[index], shuffled[other]] = [shuffled[other], shuffled[index]];
     }
-    const specialCount = Math.round(this.bricks.length * 0.05);
-    ['strength', 'bonus', 'error'].forEach((type, group) => {
+    let assigned = 0;
+    for (const [type, rate] of [['strength', 0.05], ['bonus', 0.05], ['error', 0.025]]) {
+      const specialCount = Math.round(this.bricks.length * rate);
       for (let index = 0; index < specialCount; index += 1) {
-        const brick = shuffled[group * specialCount + index];
+        const brick = shuffled[assigned++];
         brick.type = type;
         if (type === 'strength') brick.variant = index % 3;
       }
-    });
+    }
   }
 
   resizePaddle(width) {
@@ -109,7 +112,7 @@ export class BreakoutGame {
       this.strengthSeconds = 10;
     } else if (brick.type === 'bonus' || brick.type === 'error') {
       const direction = brick.type === 'bonus' ? 1 : -1;
-      this.resizePaddle(this.paddle.width + direction * this.width / 48);
+      this.resizePaddle(this.paddle.width + direction * this.width / GRID_COLUMNS);
     }
   }
 
@@ -125,7 +128,7 @@ export class BreakoutGame {
   resetBall() {
     this.ballGeneration += 1;
     this.strengthSeconds = 0;
-    const speed = this.settings?.physics.ballSpeed || 170;
+    const speed = this.settings?.physics.ballSpeed || DEFAULT_SETTINGS.physics.ballSpeed;
     this.ball.x = this.paddle.x + this.paddle.width / 2;
     this.ball.y = this.paddle.y - this.ball.radius - 4;
     this.ball.speedX = speed * 0.7 * (Math.random() < 0.5 ? -1 : 1);
