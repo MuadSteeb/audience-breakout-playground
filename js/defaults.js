@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 export const CHANNEL_NAME = 'audience-breakout-v1';
 export const SETTINGS_STORAGE_KEY = 'audience-breakout:settings';
 export const PRESETS_STORAGE_KEY = 'audience-breakout:presets';
@@ -20,12 +20,12 @@ export const DEFAULT_SETTINGS = Object.freeze({
     showBall: true,
     showDiagnostics: false,
     showLightOverlay: false,
-    ballColor: '#ffffff',
-    paddleColor: '#ffffff',
-    stageColor: '#000000',
-    textColor: '#ffffff',
-    brickLowColor: '#363a37',
-    brickHighColor: '#454945',
+    ballColor: '#57615b',
+    paddleColor: '#57615b',
+    stageColor: '#e9edec',
+    textColor: '#343d37',
+    brickLowColor: '#57615b',
+    brickHighColor: '#57615b',
     webcamOpacity: 0.1,
   },
   audio: {

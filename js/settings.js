@@ -99,12 +99,12 @@ function normalizeValue(value, rule, fallback) {
 }
 
 function migrateSettings(candidate) {
-  if (!candidate || !Number.isInteger(candidate.schemaVersion) || candidate.schemaVersion >= 2) {
+  if (!candidate || !Number.isInteger(candidate.schemaVersion) || candidate.schemaVersion >= 3) {
     return candidate;
   }
   const migrated = cloneSettings(candidate);
   // Upgrade the old built-in look without replacing customized colors or control settings.
-  const oldDefaults = {
+  const oldDefaults = candidate.schemaVersion < 2 ? {
     'appearance.title': 'Breakout Vision',
     'appearance.eyebrow': 'Computer vision demo',
     'appearance.showWebcam': true,
@@ -118,6 +118,13 @@ function migrateSettings(candidate) {
     'physics.ballSize': 24,
     'physics.paddleWidth': 168,
     'physics.paddleHeight': 18,
+  } : {
+    'appearance.ballColor': '#ffffff',
+    'appearance.paddleColor': '#ffffff',
+    'appearance.stageColor': '#000000',
+    'appearance.textColor': '#ffffff',
+    'appearance.brickLowColor': '#363a37',
+    'appearance.brickHighColor': '#454945',
   };
   for (const [path, previous] of Object.entries(oldDefaults)) {
     if (getPath(migrated, path) === previous) {

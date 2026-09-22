@@ -80,7 +80,7 @@ export class GameRenderer {
     if (settings.appearance.showPaddle) {
       context.fillStyle = settings.appearance.paddleColor;
       context.fillRect(game.paddle.x, game.paddle.y, game.paddle.width, game.paddle.height);
-      context.fillStyle = '#323834';
+      context.fillStyle = '#d9dfdb';
       const cell = width / 48;
       for (let x = cell; x < game.paddle.width; x += cell) {
         context.fillRect(game.paddle.x + x, game.paddle.y, 1, game.paddle.height);
@@ -108,7 +108,7 @@ export class GameRenderer {
     const context = this.context;
     const cell = this.canvas.width / 48;
     context.beginPath();
-    context.strokeStyle = '#171c18';
+    context.strokeStyle = '#d9dfdb';
     context.lineWidth = 1;
     for (let x = 0; x <= this.canvas.width; x += cell) {
       context.moveTo(x + 0.5, 0);
@@ -214,8 +214,8 @@ export class GameRenderer {
       canvas.setAttribute('aria-label', label);
     }
     context.clearRect(0, 0, width, height);
-    context.fillStyle = count > 0 ? ACCENT : '#171c18';
-    context.strokeStyle = '#323834';
+    context.fillStyle = count > 0 ? '#1a7f37' : '#d9dfdb';
+    context.strokeStyle = '#e9edec';
     context.lineWidth = 1;
     [...digits].forEach((digit, index) => {
       PIXEL_DIGITS[Number(digit)].forEach((row, y) => {
@@ -424,7 +424,7 @@ export class GameRenderer {
     );
     context.fillStyle = color;
     context.fillRect(brick.x, brick.y, brick.width, brick.height);
-    context.strokeStyle = 'rgba(165,173,167,0.65)';
+    context.strokeStyle = '#d9dfdb';
     context.strokeRect(brick.x + 0.5, brick.y + 0.5, brick.width - 1, brick.height - 1);
   }
 }
