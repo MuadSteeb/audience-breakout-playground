@@ -15,8 +15,9 @@ export class BreakoutGame {
     this.missResetAt = 0;
     this.settings = null;
     this.bricks = [];
-    this.paddle = { x: 0, y: 0, width: 168, height: 18, targetX: 0, travelSpeed: 0 };
+    this.paddle = { x: width / 2 - 70, y: 0, width: 140, height: 20, targetX: width / 2 - 70, travelSpeed: 0 };
     this.ball = { x: 0, y: 0, radius: 12, speedX: 0, speedY: 0 };
+    this.ballGeneration = 0;
     this.lastVisionBias = 0;
     this.lastInDeadZone = true;
   }
@@ -27,7 +28,7 @@ export class BreakoutGame {
     this.settings = settings;
     this.paddle.width = settings.physics.paddleWidth;
     this.paddle.height = settings.physics.paddleHeight;
-    this.paddle.y = this.height - this.paddle.height - 24;
+    this.paddle.y = this.height - this.paddle.height - this.width / 48;
     this.paddle.x = clamp(this.paddle.x, 18, this.width - this.paddle.width - 18);
     this.paddle.targetX = clamp(this.paddle.targetX, 18, this.width - this.paddle.width - 18);
     this.ball.radius = settings.physics.ballSize / 2;
@@ -56,19 +57,16 @@ export class BreakoutGame {
   }
 
   createBricks() {
-    const rows = 4;
-    const cols = 12;
-    const brickWidth = 56;
-    const brickHeight = 32;
-    const gap = 8;
-    const totalWidth = cols * brickWidth + (cols - 1) * gap;
-    const left = (this.width - totalWidth) / 2;
+    const rows = 9;
+    const cols = 48;
+    const brickWidth = this.width / cols;
+    const brickHeight = brickWidth;
     this.bricks = [];
     for (let row = 0; row < rows; row += 1) {
       for (let col = 0; col < cols; col += 1) {
         this.bricks.push({
-          x: left + col * (brickWidth + gap),
-          y: 52 + row * (brickHeight + gap),
+          x: col * brickWidth,
+          y: row * brickHeight,
           width: brickWidth,
           height: brickHeight,
           alive: true,
@@ -88,6 +86,7 @@ export class BreakoutGame {
   }
 
   resetBall() {
+    this.ballGeneration += 1;
     const speed = this.settings?.physics.ballSpeed || 170;
     this.ball.x = this.paddle.x + this.paddle.width / 2;
     this.ball.y = this.paddle.y - this.ball.radius - 4;

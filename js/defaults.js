@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 export const CHANNEL_NAME = 'audience-breakout-v1';
 export const SETTINGS_STORAGE_KEY = 'audience-breakout:settings';
 export const PRESETS_STORAGE_KEY = 'audience-breakout:presets';
@@ -7,12 +7,12 @@ export const FALLBACK_MESSAGE_KEY = 'audience-breakout:message';
 export const DEFAULT_SETTINGS = Object.freeze({
   schemaVersion: SCHEMA_VERSION,
   appearance: {
-    title: 'Breakout Vision',
-    eyebrow: 'Computer vision demo',
+    title: 'Audience breakout',
+    eyebrow: "GitHub Universe '26",
     message: 'Move together. Break everything.',
     showScore: true,
     showMessage: true,
-    showWebcam: true,
+    showWebcam: false,
     mirrorWebcam: true,
     showCrowd: true,
     showBricks: true,
@@ -20,13 +20,13 @@ export const DEFAULT_SETTINGS = Object.freeze({
     showBall: true,
     showDiagnostics: false,
     showLightOverlay: false,
-    ballColor: '#f6fff8',
-    paddleColor: '#d2ff6c',
-    stageColor: '#0a120e',
-    textColor: '#f0f6fc',
-    brickLowColor: '#20112d',
-    brickHighColor: '#b392ff',
-    webcamOpacity: 0.3,
+    ballColor: '#ffffff',
+    paddleColor: '#ffffff',
+    stageColor: '#000000',
+    textColor: '#ffffff',
+    brickLowColor: '#363a37',
+    brickHighColor: '#454945',
+    webcamOpacity: 0.1,
   },
   audio: {
     muted: false,
@@ -36,10 +36,10 @@ export const DEFAULT_SETTINGS = Object.freeze({
     ballSpeed: 170,
     speedUp: 1.02,
     timeScale: 1,
-    ballSize: 24,
+    ballSize: 20,
     paddleSpeed: 700,
-    paddleWidth: 168,
-    paddleHeight: 18,
+    paddleWidth: 140,
+    paddleHeight: 20,
   },
   vision: {
     targetColor: '#39d353',

@@ -10,34 +10,65 @@
     <main class="audience-shell">
       <header class="audience-header" id="audienceHeader">
         <div>
-          <p class="eyebrow" id="audienceEyebrow">Computer vision demo</p>
-          <h1 id="audienceTitle">Breakout Vision</h1>
+          <p class="eyebrow" id="audienceEyebrow">GitHub Universe '26</p>
+          <h1 id="audienceTitle">Audience breakout</h1>
         </div>
         <div class="score-pill" id="scorePanel">
-          <span>Score</span>
-          <strong id="score">0</strong>
+          <span>// bricks cleared</span>
+          <strong id="score">000</strong>
         </div>
       </header>
 
-      <section class="stage-shell">
-        <video id="webcam" autoplay playsinline muted></video>
-        <img id="demoImage" src="./assets/audience-placeholder.png" alt="" hidden />
-        <canvas id="gameCanvas" width="900" height="500" aria-label="Breakout game"></canvas>
-        <div class="startup-panel" id="startupPanel">
-          <h2>Ready for the audience</h2>
-          <label class="camera-select" for="cameraSelect">
-            <span>Camera</span>
-            <select id="cameraSelect">
-              <option value="">Front camera (default)</option>
-            </select>
-          </label>
-          <div class="button-row">
-            <button class="button primary" id="startCameraButton">Start camera</button>
-            <button class="button secondary" id="startDemoButton">Use demo mode</button>
+      <section class="arcade-stage" aria-label="Audience breakout arena">
+        <aside class="audience-side side-left">
+          <div class="side-visual">
+            <canvas id="leftMeter" width="240" height="280" role="img" aria-label="Left audience: 0 matched lights"></canvas>
+            <span class="side-label">left // lights</span>
+          </div>
+          <div class="side-instructions">
+            <p>// instructions</p>
+            <p>move the paddle by waving your badge toward your side of the room!</p>
+          </div>
+        </aside>
+
+        <div class="stage-shell">
+          <video id="webcam" autoplay playsinline muted></video>
+          <img id="demoImage" src="./assets/audience-placeholder.png" alt="" hidden />
+          <canvas id="gameCanvas" width="960" height="400" aria-label="Breakout game"></canvas>
+          <div class="startup-panel" id="startupPanel">
+            <p class="eyebrow">// initialize</p>
+            <h2>Ready, audience?</h2>
+            <label class="camera-select" for="cameraSelect">
+              <span>Camera</span>
+              <select id="cameraSelect">
+                <option value="">Front camera (default)</option>
+              </select>
+            </label>
+            <div class="button-row">
+              <button class="button primary" id="startCameraButton">Start camera</button>
+              <button class="button secondary" id="startDemoButton">Use demo mode</button>
+            </div>
           </div>
         </div>
+
+        <aside class="audience-side side-right">
+          <div class="side-visual">
+            <canvas id="rightMeter" width="240" height="280" role="img" aria-label="Right audience: 0 matched lights"></canvas>
+            <span class="side-label">right // lights</span>
+          </div>
+          <div class="side-instructions">
+            <p>// instructions</p>
+            <p>move the paddle by waving your badge toward your side of the room!</p>
+          </div>
+        </aside>
       </section>
-      <div class="stage-message" id="stageMessage">Move together. Break everything.</div>
+      <footer class="audience-footer">
+        <div>
+          <span class="play-state" id="playState">ready</span>
+          <span id="audienceStatus" role="status">Start the camera or use demo mode to play.</span>
+        </div>
+        <p class="stage-message" id="stageMessage">Move together. Break everything.</p>
+      </footer>
     </main>
     <script type="module" src="./js/audience.js"></script>
   </body>

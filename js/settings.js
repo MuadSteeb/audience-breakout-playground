@@ -98,10 +98,40 @@ function normalizeValue(value, rule, fallback) {
   return rule.type === 'integer' ? Math.round(clamped) : clamped;
 }
 
+function migrateSettings(candidate) {
+  if (!candidate || !Number.isInteger(candidate.schemaVersion) || candidate.schemaVersion >= 2) {
+    return candidate;
+  }
+  const migrated = cloneSettings(candidate);
+  // Upgrade the old built-in look without replacing customized colors or control settings.
+  const oldDefaults = {
+    'appearance.title': 'Breakout Vision',
+    'appearance.eyebrow': 'Computer vision demo',
+    'appearance.showWebcam': true,
+    'appearance.ballColor': '#f6fff8',
+    'appearance.paddleColor': '#d2ff6c',
+    'appearance.stageColor': '#0a120e',
+    'appearance.textColor': '#f0f6fc',
+    'appearance.brickLowColor': '#20112d',
+    'appearance.brickHighColor': '#b392ff',
+    'appearance.webcamOpacity': 0.3,
+    'physics.ballSize': 24,
+    'physics.paddleWidth': 168,
+    'physics.paddleHeight': 18,
+  };
+  for (const [path, previous] of Object.entries(oldDefaults)) {
+    if (getPath(migrated, path) === previous) {
+      setPath(migrated, path, getPath(DEFAULT_SETTINGS, path));
+    }
+  }
+  return migrated;
+}
+
 export function normalizeSettings(candidate) {
+  const source = migrateSettings(candidate);
   const settings = cloneSettings();
   for (const [path, rule] of Object.entries(RULES)) {
-    setPath(settings, path, normalizeValue(getPath(candidate, path), rule, getPath(settings, path)));
+    setPath(settings, path, normalizeValue(getPath(source, path), rule, getPath(settings, path)));
   }
   settings.schemaVersion = SCHEMA_VERSION;
   if (settings.crowd.minimumOpacity > settings.crowd.maximumOpacity) {

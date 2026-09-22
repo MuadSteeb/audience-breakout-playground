@@ -18,6 +18,8 @@ const stageMessage = document.querySelector('#stageMessage');
 const startCameraButton = document.querySelector('#startCameraButton');
 const startDemoButton = document.querySelector('#startDemoButton');
 const cameraSelect = document.querySelector('#cameraSelect');
+const playState = document.querySelector('#playState');
+const audienceStatus = document.querySelector('#audienceStatus');
 
 const CAMERA_DEVICE_STORAGE_KEY = 'audience.cameraDeviceId';
 let selectedCameraDeviceId = '';
@@ -42,7 +44,15 @@ const audio = new GameAudio();
 const game = new BreakoutGame(canvas.width, canvas.height, audio);
 const crowd = new CrowdSimulator(canvas.width, canvas.height);
 const vision = new VisionDetector(canvas.width, canvas.height);
-const renderer = new GameRenderer(canvas);
+const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
+const renderer = new GameRenderer(canvas, {
+  leftCanvas: document.querySelector('#leftMeter'),
+  rightCanvas: document.querySelector('#rightMeter'),
+  reducedMotion: motionPreference.matches,
+});
+motionPreference.addEventListener('change', (event) => {
+  renderer.reducedMotion = event.matches;
+});
 
 function sourceReady() {
   if (mode === 'demo') {
@@ -107,6 +117,7 @@ let lastStatus = '';
 
 function setStatus(message) {
   lastStatus = message;
+  audienceStatus.textContent = message;
 }
 
 function stopCamera() {
@@ -297,8 +308,9 @@ function animate(timestamp) {
     game.setPaddleControl(latestVision);
     game.update(delta, Date.now());
   }
-  renderer.draw(game, crowd, settings, activeSource(), sourceReady(), latestVision, game.paddleIntent());
-  scoreElement.textContent = String(game.score);
+  renderer.draw(game, crowd, settings, activeSource(), sourceReady(), latestVision, game.paddleIntent(), delta);
+  scoreElement.textContent = String(game.score).padStart(3, '0');
+  playState.textContent = !game.running ? 'ready' : game.paused ? 'paused' : game.missResetAt ? 'next ball' : 'playing';
   requestAnimationFrame(animate);
 }
 

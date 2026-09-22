@@ -12,15 +12,47 @@ function interpolateColor(start, end, amount) {
   return `rgb(${from.map((value, index) => Math.round(value + (to[index] - value) * amount)).join(',')})`;
 }
 
+const ACCENT = '#5fed83';
+const TRAIL_COLORS = ['#1a7f37', '#583af7', '#c05200'];
+const BURST_COLORS = ['#5fed83', '#bba00a', '#583af7', '#c05200', '#f73678', '#ae85ff'];
+const PIXEL_DIGITS = [
+  ['111', '101', '101', '101', '111'],
+  ['010', '110', '010', '010', '111'],
+  ['111', '001', '111', '100', '111'],
+  ['111', '001', '111', '001', '111'],
+  ['101', '101', '111', '001', '001'],
+  ['111', '100', '111', '001', '111'],
+  ['111', '100', '111', '101', '111'],
+  ['111', '001', '001', '001', '001'],
+  ['111', '101', '111', '101', '111'],
+  ['111', '101', '111', '001', '111'],
+];
+
 export class GameRenderer {
-  constructor(canvas) {
+  constructor(canvas, { leftCanvas = null, rightCanvas = null, reducedMotion = false } = {}) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
+    this.sidePanels = [
+      { canvas: leftCanvas, side: 'left' },
+      { canvas: rightCanvas, side: 'right' },
+    ].filter((panel) => panel.canvas).map((panel) => ({
+      ...panel,
+      context: panel.canvas.getContext('2d'),
+    }));
+    this.reducedMotion = reducedMotion;
+    this.effectTime = 0;
+    this.trailTimer = 0;
+    this.trail = [];
+    this.particles = [];
+    this.lastScore = 0;
+    this.lastBoard = null;
+    this.lastBallGeneration = -1;
   }
 
-  draw(game, crowd, settings, source, sourceReady, vision = null, paddleIntent = null) {
+  draw(game, crowd, settings, source, sourceReady, vision = null, paddleIntent = null, deltaSeconds = 0) {
     const context = this.context;
     const { width, height } = this.canvas;
+    this.updateEffects(game, deltaSeconds);
     context.clearRect(0, 0, width, height);
     context.fillStyle = settings.appearance.stageColor;
     context.fillRect(0, 0, width, height);
@@ -36,9 +68,7 @@ export class GameRenderer {
       context.restore();
     }
 
-    if (settings.appearance.showCrowd) {
-      crowd.draw(context);
-    }
+    this.drawGrid();
     if (settings.appearance.showBricks) {
       for (const brick of game.bricks) {
         if (brick.alive) {
@@ -46,15 +76,22 @@ export class GameRenderer {
         }
       }
     }
+    this.drawEffects(game, settings);
     if (settings.appearance.showPaddle) {
       context.fillStyle = settings.appearance.paddleColor;
       context.fillRect(game.paddle.x, game.paddle.y, game.paddle.width, game.paddle.height);
+      context.fillStyle = '#323834';
+      const cell = width / 48;
+      for (let x = cell; x < game.paddle.width; x += cell) {
+        context.fillRect(game.paddle.x + x, game.paddle.y, 1, game.paddle.height);
+      }
     }
-    if (settings.appearance.showBall) {
-      context.beginPath();
-      context.arc(game.ball.x, game.ball.y, game.ball.radius, 0, Math.PI * 2);
+    if (settings.appearance.showBall && game.running) {
       context.fillStyle = settings.appearance.ballColor;
-      context.fill();
+      context.fillRect(
+        game.ball.x - game.ball.radius, game.ball.y - game.ball.radius,
+        game.ball.radius * 2, game.ball.radius * 2,
+      );
     }
     if (settings.appearance.showLightOverlay && !settings.appearance.showDiagnostics) {
       this.drawLightOverlay(settings, vision);
@@ -62,6 +99,148 @@ export class GameRenderer {
     if (settings.appearance.showDiagnostics) {
       this.drawDiagnostics(game, settings, vision, paddleIntent);
     }
+    for (const panel of this.sidePanels) {
+      this.drawSidePanel(panel, vision?.[panel.side] ?? 0, settings);
+    }
+  }
+
+  drawGrid() {
+    const context = this.context;
+    const cell = this.canvas.width / 48;
+    context.beginPath();
+    context.strokeStyle = '#171c18';
+    context.lineWidth = 1;
+    for (let x = 0; x <= this.canvas.width; x += cell) {
+      context.moveTo(x + 0.5, 0);
+      context.lineTo(x + 0.5, this.canvas.height);
+    }
+    for (let y = 0; y <= this.canvas.height; y += cell) {
+      context.moveTo(0, y + 0.5);
+      context.lineTo(this.canvas.width, y + 0.5);
+    }
+    context.stroke();
+  }
+
+  updateEffects(game, deltaSeconds) {
+    const reset = this.lastBoard !== game.bricks || this.lastBallGeneration !== game.ballGeneration;
+    if (reset || this.reducedMotion || game.score < this.lastScore) {
+      this.trail = [];
+      this.particles = [];
+      this.trailTimer = 0;
+    }
+    this.lastBoard = game.bricks;
+    this.lastBallGeneration = game.ballGeneration;
+    const delta = game.running && !game.paused
+      ? Math.min(Math.max(deltaSeconds, 0), 0.05) * game.settings.physics.timeScale
+      : 0;
+    if (!this.reducedMotion) {
+      this.effectTime += delta;
+      if (!reset && game.score > this.lastScore) {
+        const count = Math.min(game.score - this.lastScore, 4) * 12;
+        for (let index = 0; index < count; index += 1) {
+          const angle = index * 2.39996;
+          const speed = 45 + (index % 5) * 22;
+          this.particles.push({
+            x: game.ball.x,
+            y: game.ball.y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 30,
+            age: 0,
+            color: BURST_COLORS[index % BURST_COLORS.length],
+            size: 3 + index % 3,
+          });
+        }
+        this.particles = this.particles.slice(-160);
+      }
+      for (const particle of this.particles) {
+        particle.age += delta;
+        particle.x += particle.vx * delta;
+        particle.y += particle.vy * delta;
+        particle.vy += 90 * delta;
+      }
+      this.particles = this.particles.filter((particle) => particle.age < 0.55);
+      this.trailTimer += delta;
+      if (delta > 0 && !game.missResetAt && (this.trailTimer >= 0.03 || !this.trail.length)) {
+        this.trail.push({
+          at: this.effectTime,
+          x: game.ball.x,
+          y: game.ball.y,
+          paddleX: game.paddle.x,
+        });
+        this.trailTimer %= 0.03;
+      }
+      this.trail = this.trail.filter((point) => this.effectTime - point.at < 0.18).slice(-8);
+    }
+    this.lastScore = game.score;
+  }
+
+  drawEffects(game, settings) {
+    const context = this.context;
+    const cell = this.canvas.width / 48;
+    context.save();
+    for (const point of this.trail) {
+      const age = this.effectTime - point.at;
+      context.fillStyle = TRAIL_COLORS[Math.min(2, Math.floor(age / 0.06))];
+      context.globalAlpha = 0.4 * (1 - age / 0.18);
+      if (settings.appearance.showBall) {
+        context.fillRect(
+          Math.round((point.x - game.ball.radius) / cell) * cell,
+          Math.round((point.y - game.ball.radius) / cell) * cell,
+          game.ball.radius * 2, game.ball.radius * 2,
+        );
+      }
+      if (settings.appearance.showPaddle) {
+        context.fillRect(point.paddleX, game.paddle.y, game.paddle.width, game.paddle.height);
+      }
+    }
+    if (settings.appearance.showBricks) {
+      for (const particle of this.particles) {
+        context.fillStyle = particle.color;
+        context.globalAlpha = 1 - particle.age / 0.55;
+        context.fillRect(Math.round(particle.x), Math.round(particle.y), particle.size, particle.size);
+      }
+    }
+    context.restore();
+  }
+
+  drawSidePanel({ canvas, context, side }, value, settings) {
+    const { width, height } = canvas;
+    const count = Math.max(0, Math.round(value));
+    const digits = String(count).padStart(2, '0');
+    const cell = Math.min(27, (width - 40) / (digits.length * 4 - 1));
+    const left = (width - (digits.length * 4 - 1) * cell) / 2;
+    const label = `${side === 'left' ? 'Left' : 'Right'} audience: ${count} matched lights`;
+    if (canvas.getAttribute('aria-label') !== label) {
+      canvas.setAttribute('aria-label', label);
+    }
+    context.clearRect(0, 0, width, height);
+    context.fillStyle = count > 0 ? ACCENT : '#171c18';
+    context.strokeStyle = '#323834';
+    context.lineWidth = 1;
+    [...digits].forEach((digit, index) => {
+      PIXEL_DIGITS[Number(digit)].forEach((row, y) => {
+        [...row].forEach((filled, x) => {
+          if (filled === '0') return;
+          const px = left + (index * 4 + x) * cell;
+          const py = 20 + y * cell;
+          context.fillRect(px, py, cell, cell);
+          context.strokeRect(px + 0.5, py + 0.5, cell - 1, cell - 1);
+        });
+      });
+    });
+    if (!settings.appearance.showCrowd) return;
+    context.fillStyle = settings.crowd.enabled ? settings.crowd.color : ACCENT;
+    const size = Math.min(4, Math.max(1, settings.crowd.blockSize * 0.22));
+    const opacityRange = settings.crowd.maximumOpacity - settings.crowd.minimumOpacity;
+    const motion = this.reducedMotion ? 0 : this.effectTime * settings.crowd.jitter / 225;
+    for (let index = 0; index < Math.min(count, 180); index += 1) {
+      const progress = (index * 0.618034 + motion) % 1;
+      const x = width / 2 + Math.sin(index * 19.31 + (side === 'left' ? 0 : 3)) * width * 0.44 * progress;
+      const y = height * (0.4 + progress * 0.52);
+      context.globalAlpha = settings.crowd.minimumOpacity + opacityRange * ((index % 11) / 10);
+      context.fillRect(Math.round(x), Math.round(y), size, size);
+    }
+    context.globalAlpha = 1;
   }
 
   drawLightOverlay(settings, vision) {
@@ -244,14 +423,8 @@ export class GameRenderer {
       brick.shade / 4,
     );
     context.fillStyle = color;
-    for (let y = 0; y < brick.height; y += 4) {
-      for (let x = 0; x < brick.width; x += 4) {
-        if ((x + y) % 8 < 7 || (brick.x + brick.y + x + y) % 9 === 0) {
-          context.fillRect(brick.x + x, brick.y + y, 4, 4);
-        }
-      }
-    }
-    context.strokeStyle = 'rgba(255,255,255,0.28)';
+    context.fillRect(brick.x, brick.y, brick.width, brick.height);
+    context.strokeStyle = 'rgba(165,173,167,0.65)';
     context.strokeRect(brick.x + 0.5, brick.y + 0.5, brick.width - 1, brick.height - 1);
   }
 }

@@ -53,7 +53,7 @@
           <label class="toggle"><input name="appearance.showMessage" type="checkbox" /> Show message</label>
           <label class="toggle"><input name="appearance.showWebcam" type="checkbox" /> Show webcam</label>
           <label class="toggle"><input name="appearance.mirrorWebcam" type="checkbox" /> Mirror webcam</label>
-          <label class="toggle"><input name="appearance.showCrowd" type="checkbox" /> Show crowd overlay</label>
+          <label class="toggle"><input name="appearance.showCrowd" type="checkbox" /> Show audience light particles</label>
           <label class="toggle"><input name="appearance.showBricks" type="checkbox" /> Show bricks</label>
           <label class="toggle"><input name="appearance.showPaddle" type="checkbox" /> Show paddle</label>
           <label class="toggle"><input name="appearance.showBall" type="checkbox" /> Show ball</label>
@@ -157,14 +157,14 @@
           <fieldset>
             <legend>Crowd simulator</legend>
             <label class="toggle"><input name="crowd.enabled" type="checkbox" /> Enable simulator</label>
-            <label data-output="crowd.leftCount">Left blocks <output></output>
+            <label data-output="crowd.leftCount">Left lights <output></output>
               <input name="crowd.leftCount" type="range" min="0" max="300" step="1" />
             </label>
-            <label data-output="crowd.rightCount">Right blocks <output></output>
+            <label data-output="crowd.rightCount">Right lights <output></output>
               <input name="crowd.rightCount" type="range" min="0" max="300" step="1" />
             </label>
             <label>Crowd color <input name="crowd.color" type="color" /></label>
-            <label data-output="crowd.blockSize">Block size <output></output>
+            <label data-output="crowd.blockSize">Particle size <output></output>
               <input name="crowd.blockSize" type="range" min="2" max="24" step="1" />
             </label>
             <label data-output="crowd.minimumOpacity">Minimum opacity <output></output>
