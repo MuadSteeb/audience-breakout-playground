@@ -86,24 +86,6 @@ h1 { margin-bottom: 0; letter-spacing: -0.04em; }
   align-items: center;
 }
 .audience-shell { width: min(2100px, 100%); margin: auto; padding: clamp(12px, 3.8vw, 80px); }
-.audience-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: clamp(14px, 2vw, 36px);
-}
-.audience-header h1 { font-size: clamp(1.2rem, 2vw, 2rem); font-weight: 550; }
-.audience-header .eyebrow { font-size: 0.62rem; color: var(--primary-strong); }
-.score-pill {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  text-align: right;
-  font-family: var(--mono);
-}
-.score-pill span { color: var(--muted); font-size: 0.65rem; }
-.score-pill strong { color: var(--primary-strong); font-size: clamp(1.2rem, 2.5vw, 2rem); font-weight: 500; }
 .arcade-stage {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 3.12fr) minmax(0, 1fr);
@@ -337,8 +319,6 @@ fieldset > small { display: block; color: var(--muted); line-height: 1.5; margin
   .operator-topbar, .control-grid { grid-template-columns: 1fr; }
   .operator-topbar > .button-row { grid-column: auto; }
   .telemetry-panel { grid-template-columns: repeat(2, 1fr); }
-  .audience-header { align-items: flex-start; }
-  .score-pill { flex-direction: column; align-items: flex-end; gap: 0.3rem; }
   .arcade-stage { grid-template-columns: 1fr 1fr; }
   .stage-shell { grid-column: 1 / -1; grid-row: 1; }
   .audience-side { flex-direction: row; min-height: 150px; }

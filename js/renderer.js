@@ -100,7 +100,7 @@ export class GameRenderer {
       this.drawDiagnostics(game, settings, vision, paddleIntent);
     }
     for (const panel of this.sidePanels) {
-      this.drawSidePanel(panel, vision?.[panel.side] ?? 0, settings);
+      this.drawSidePanel(panel, game.score, vision?.[panel.side] ?? 0, settings);
     }
   }
 
@@ -203,21 +203,25 @@ export class GameRenderer {
     context.restore();
   }
 
-  drawSidePanel({ canvas, context, side }, value, settings) {
+  drawSidePanel({ canvas, context, side }, score, value, settings) {
     const { width, height } = canvas;
     const count = Math.max(0, Math.round(value));
-    const digits = String(count).padStart(2, '0');
+    const total = Math.max(0, Math.round(score));
+    const digits = String(total).padStart(2, '0');
     const cell = Math.min(27, (width - 40) / (digits.length * 4 - 1));
     const left = (width - (digits.length * 4 - 1) * cell) / 2;
-    const label = `${side === 'left' ? 'Left' : 'Right'} audience: ${count} matched lights`;
+    const label = settings.appearance.showScore
+      ? `Total bricks cleared: ${total}`
+      : `${side === 'left' ? 'Left' : 'Right'} audience lights`;
     if (canvas.getAttribute('aria-label') !== label) {
       canvas.setAttribute('aria-label', label);
     }
     context.clearRect(0, 0, width, height);
-    context.fillStyle = count > 0 ? '#1a7f37' : '#d9dfdb';
+    context.fillStyle = total > 0 ? '#1a7f37' : '#d9dfdb';
     context.strokeStyle = '#e9edec';
     context.lineWidth = 1;
-    [...digits].forEach((digit, index) => {
+    const visibleDigits = settings.appearance.showScore ? [...digits] : [];
+    visibleDigits.forEach((digit, index) => {
       PIXEL_DIGITS[Number(digit)].forEach((row, y) => {
         [...row].forEach((filled, x) => {
           if (filled === '0') return;

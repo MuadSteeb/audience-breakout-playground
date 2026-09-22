@@ -10,10 +10,7 @@ const canvas = document.querySelector('#gameCanvas');
 const video = document.querySelector('#webcam');
 const demoImage = document.querySelector('#demoImage');
 const startupPanel = document.querySelector('#startupPanel');
-const scoreElement = document.querySelector('#score');
-const scorePanel = document.querySelector('#scorePanel');
-const audienceTitle = document.querySelector('#audienceTitle');
-const audienceEyebrow = document.querySelector('#audienceEyebrow');
+const scoreLabels = document.querySelectorAll('.side-label');
 const stageMessage = document.querySelector('#stageMessage');
 const startCameraButton = document.querySelector('#startCameraButton');
 const startDemoButton = document.querySelector('#startDemoButton');
@@ -74,17 +71,12 @@ function applySettings(nextSettings, revision) {
   audio.applySettings(settings.audio);
   game.applySettings(settings);
   crowd.applySettings(settings.crowd);
-  audienceTitle.textContent = settings.appearance.title;
-  audienceEyebrow.textContent = settings.appearance.eyebrow;
   stageMessage.textContent = settings.appearance.message;
   stageMessage.hidden = !settings.appearance.showMessage;
-  scorePanel.hidden = !settings.appearance.showScore;
+  scoreLabels.forEach((label) => { label.hidden = !settings.appearance.showScore; });
   document.body.style.backgroundColor = settings.appearance.stageColor;
   document.body.style.color = settings.appearance.textColor;
-  audienceTitle.style.color = settings.appearance.textColor;
-  audienceEyebrow.style.color = settings.appearance.textColor;
   stageMessage.style.color = settings.appearance.textColor;
-  scorePanel.style.color = settings.appearance.textColor;
 }
 
 function runtimeState() {
@@ -309,7 +301,6 @@ function animate(timestamp) {
     game.update(delta, Date.now());
   }
   renderer.draw(game, crowd, settings, activeSource(), sourceReady(), latestVision, game.paddleIntent(), delta);
-  scoreElement.textContent = String(game.score).padStart(3, '0');
   playState.textContent = !game.running ? 'ready' : game.paused ? 'paused' : game.missResetAt ? 'next ball' : 'playing';
   requestAnimationFrame(animate);
 }
