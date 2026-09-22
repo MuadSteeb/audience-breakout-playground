@@ -93,10 +93,20 @@ h1 { margin-bottom: 0; letter-spacing: -0.04em; }
   box-shadow: 0 0 35px #5fed8326, 0 0 90px #1a7f371a;
 }
 .audience-side {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
   background: var(--bg);
+}
+.side-camera {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  opacity: 0.25;
+  pointer-events: none;
 }
 .side-visual { position: relative; flex: 1; min-height: 0; }
 .side-visual canvas { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }

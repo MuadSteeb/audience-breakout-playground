@@ -10,6 +10,7 @@
     <main class="audience-shell">
       <section class="arcade-stage" aria-label="Audience breakout arena">
         <aside class="audience-side side-left">
+          <canvas id="leftCamera" class="side-camera" width="480" height="720" aria-hidden="true" hidden></canvas>
           <div class="side-visual">
             <canvas id="leftMeter" width="240" height="280" role="img" aria-label="Total bricks cleared: 0"></canvas>
             <span class="side-label">total // bricks cleared</span>
@@ -41,6 +42,7 @@
         </div>
 
         <aside class="audience-side side-right">
+          <canvas id="rightCamera" class="side-camera" width="480" height="720" aria-hidden="true" hidden></canvas>
           <div class="side-visual">
             <canvas id="rightMeter" width="240" height="280" role="img" aria-label="Total bricks cleared: 0"></canvas>
             <span class="side-label">total // bricks cleared</span>

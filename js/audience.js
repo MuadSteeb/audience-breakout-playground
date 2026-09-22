@@ -46,6 +46,8 @@ const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const renderer = new GameRenderer(canvas, {
   leftCanvas: document.querySelector('#leftMeter'),
   rightCanvas: document.querySelector('#rightMeter'),
+  leftCameraCanvas: document.querySelector('#leftCamera'),
+  rightCameraCanvas: document.querySelector('#rightCamera'),
   reducedMotion: motionPreference.matches,
 });
 motionPreference.addEventListener('change', (event) => {
@@ -302,6 +304,10 @@ function animate(timestamp) {
     game.update(delta, Date.now());
   }
   renderer.draw(game, crowd, settings, activeSource(), sourceReady(), latestVision, game.paddleIntent(), delta);
+  renderer.drawCameraPanels(
+    video, mode === 'camera' && sourceReady() && video.readyState >= 2,
+    settings.appearance.mirrorWebcam,
+  );
   playState.textContent = !game.running ? 'ready' : game.paused ? 'paused' : game.missResetAt ? 'next ball' : 'playing';
   const strengthLabel = game.strengthSeconds > 0 ? `strength // ${Math.ceil(game.strengthSeconds)}s` : '';
   if (powerStatus.textContent !== strengthLabel) powerStatus.textContent = strengthLabel;

@@ -32,7 +32,10 @@ const PIXEL_DIGITS = [
 ];
 
 export class GameRenderer {
-  constructor(canvas, { leftCanvas = null, rightCanvas = null, reducedMotion = false } = {}) {
+  constructor(canvas, {
+    leftCanvas = null, rightCanvas = null,
+    leftCameraCanvas = null, rightCameraCanvas = null, reducedMotion = false,
+  } = {}) {
     this.canvas = canvas;
     this.context = canvas.getContext('2d');
     this.sidePanels = [
@@ -43,6 +46,9 @@ export class GameRenderer {
       context: panel.canvas.getContext('2d'),
     }));
     this.reducedMotion = reducedMotion;
+    this.cameraPanels = [leftCameraCanvas, rightCameraCanvas].map((canvas, index) => (
+      canvas ? { canvas, context: canvas.getContext('2d'), index } : null
+    )).filter(Boolean);
     this.effectTime = 0;
     this.trailTimer = 0;
     this.trail = [];
@@ -104,6 +110,27 @@ export class GameRenderer {
     }
     for (const panel of this.sidePanels) {
       this.drawSidePanel(panel, game.score, vision?.[panel.side] ?? 0, settings);
+    }
+  }
+
+  drawCameraPanels(source, ready, mirrored) {
+    for (const { canvas, context, index } of this.cameraPanels) {
+      canvas.hidden = !ready;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      if (!ready) continue;
+      const halfWidth = source.videoWidth / 2;
+      // Split the displayed (possibly mirrored) image, matching the steering sides.
+      const sourceHalf = mirrored ? 1 - index : index;
+      context.save();
+      if (mirrored) {
+        context.translate(canvas.width, 0);
+        context.scale(-1, 1);
+      }
+      context.drawImage(
+        source, sourceHalf * halfWidth, 0, halfWidth, source.videoHeight,
+        0, 0, canvas.width, canvas.height,
+      );
+      context.restore();
     }
   }
 
