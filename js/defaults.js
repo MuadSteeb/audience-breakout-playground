@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 4;
+export const SCHEMA_VERSION = 5;
 export const GRID_COLUMNS = 40;
 export const CHANNEL_NAME = 'audience-breakout-v1';
 export const SETTINGS_STORAGE_KEY = 'audience-breakout:settings';
@@ -22,7 +22,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
     showDiagnostics: false,
     showLightOverlay: false,
     ballColor: '#57615b',
-    paddleColor: '#57615b',
+    paddleColor: '#1a7f37',
     stageColor: '#e9edec',
     textColor: '#343d37',
     brickLowColor: '#57615b',
