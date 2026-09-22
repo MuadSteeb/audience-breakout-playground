@@ -54,6 +54,8 @@ const RULES = {
   'crowd.minimumOpacity': { type: 'number', min: 0.05, max: 1 },
   'crowd.maximumOpacity': { type: 'number', min: 0.05, max: 1 },
   'crowd.jitter': { type: 'number', min: 0, max: 40 },
+  'manualControl.enabled': { type: 'boolean' },
+  'manualControl.position': { type: 'number', min: 0, max: 100 },
 };
 
 export function cloneSettings(settings = DEFAULT_SETTINGS) {

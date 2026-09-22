@@ -205,15 +205,15 @@ export class GameRenderer {
       context.setLineDash([]);
       context.restore();
 
-      const controlMode = settings.vision.controlMode === 'edge' ? 'edge' : 'proportional';
-      const deadZoneLine = controlMode === 'proportional'
-        ? 'dead zone: n/a (proportional)'
+      const controlMode = settings.manualControl.enabled ? 'manual' : settings.vision.controlMode;
+      const deadZoneLine = controlMode !== 'edge'
+        ? `dead zone: n/a (${controlMode})`
         : paddleIntent.inDeadZone
           ? `dead zone: yes (|bias| ≤ ${settings.vision.deadZone})`
           : `dead zone: no → ${paddleIntent.direction}`;
       const lines = [
         `mode: ${controlMode}`,
-        biasLabel,
+        controlMode === 'manual' ? `manual position: ${settings.manualControl.position}%` : biasLabel,
         `target X: ${Math.round(paddleIntent.targetX)}`,
         `travel: ${Math.round(paddleIntent.travelSpeed)} px/s`,
         deadZoneLine,

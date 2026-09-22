@@ -70,11 +70,14 @@ function populateForm({ skipActive = true } = {}) {
 function syncModeAwareControls() {
   const proportional = settings.vision.controlMode === 'proportional';
   for (const input of form.elements) {
-    if (input.name === 'vision.deadZone') {
-      input.disabled = proportional;
+    if (input.name === 'vision.deadZone' || input.name === 'manualControl.position') {
+      const disabled = input.name === 'vision.deadZone'
+        ? proportional
+        : !settings.manualControl.enabled;
+      input.disabled = disabled;
       const label = input.closest('label');
       if (label) {
-        label.classList.toggle('is-disabled', proportional);
+        label.classList.toggle('is-disabled', disabled);
       }
     }
   }

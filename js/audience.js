@@ -294,7 +294,7 @@ function animate(timestamp) {
   const cameraSimulatedCounts = mode === 'demo' ? crowd.detectionCounts() : { left: 0, right: 0 };
   latestVision = vision.detect(activeSource(), settings, sourceReady(), cameraSimulatedCounts);
   if (game.running && !game.paused) {
-    game.setVisionControl(latestVision);
+    game.setPaddleControl(latestVision);
     game.update(delta, Date.now());
   }
   renderer.draw(game, crowd, settings, activeSource(), sourceReady(), latestVision, game.paddleIntent());

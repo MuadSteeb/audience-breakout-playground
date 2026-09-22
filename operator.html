@@ -153,29 +153,40 @@
           <small>Draws the left/right sample regions, live counts, matched pixels, and where the paddle is heading given the current bias and dead zone.</small>
         </fieldset>
 
-        <fieldset>
-          <legend>Crowd simulator</legend>
-          <label class="toggle"><input name="crowd.enabled" type="checkbox" /> Enable simulator</label>
-          <label data-output="crowd.leftCount">Left blocks <output></output>
-            <input name="crowd.leftCount" type="range" min="0" max="300" step="1" />
-          </label>
-          <label data-output="crowd.rightCount">Right blocks <output></output>
-            <input name="crowd.rightCount" type="range" min="0" max="300" step="1" />
-          </label>
-          <label>Crowd color <input name="crowd.color" type="color" /></label>
-          <label data-output="crowd.blockSize">Block size <output></output>
-            <input name="crowd.blockSize" type="range" min="2" max="24" step="1" />
-          </label>
-          <label data-output="crowd.minimumOpacity">Minimum opacity <output></output>
-            <input name="crowd.minimumOpacity" type="range" min="0.05" max="1" step="0.05" />
-          </label>
-          <label data-output="crowd.maximumOpacity">Maximum opacity <output></output>
-            <input name="crowd.maximumOpacity" type="range" min="0.05" max="1" step="0.05" />
-          </label>
-          <label data-output="crowd.jitter">Movement <output></output>
-            <input name="crowd.jitter" type="range" min="0" max="40" step="1" />
-          </label>
-        </fieldset>
+        <div class="control-stack">
+          <fieldset>
+            <legend>Crowd simulator</legend>
+            <label class="toggle"><input name="crowd.enabled" type="checkbox" /> Enable simulator</label>
+            <label data-output="crowd.leftCount">Left blocks <output></output>
+              <input name="crowd.leftCount" type="range" min="0" max="300" step="1" />
+            </label>
+            <label data-output="crowd.rightCount">Right blocks <output></output>
+              <input name="crowd.rightCount" type="range" min="0" max="300" step="1" />
+            </label>
+            <label>Crowd color <input name="crowd.color" type="color" /></label>
+            <label data-output="crowd.blockSize">Block size <output></output>
+              <input name="crowd.blockSize" type="range" min="2" max="24" step="1" />
+            </label>
+            <label data-output="crowd.minimumOpacity">Minimum opacity <output></output>
+              <input name="crowd.minimumOpacity" type="range" min="0.05" max="1" step="0.05" />
+            </label>
+            <label data-output="crowd.maximumOpacity">Maximum opacity <output></output>
+              <input name="crowd.maximumOpacity" type="range" min="0.05" max="1" step="0.05" />
+            </label>
+            <label data-output="crowd.jitter">Movement <output></output>
+              <input name="crowd.jitter" type="range" min="0" max="40" step="1" />
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>Manual paddle control</legend>
+            <label class="toggle"><input name="manualControl.enabled" type="checkbox" /> Enable manual control</label>
+            <label data-output="manualControl.position" class="is-disabled">Paddle position (%) <output>50</output>
+              <input name="manualControl.position" type="range" min="0" max="100" step="1" value="50" aria-describedby="manualControlHint" disabled />
+            </label>
+            <small id="manualControlHint">0 = left, 50 = center, 100 = right. While the game is running, manual control overrides camera and crowd steering. Movement stays smooth and respects paddle speed. Turn it off to restore vision control.</small>
+          </fieldset>
+        </div>
 
         <fieldset>
           <legend>Presets</legend>

@@ -96,6 +96,14 @@ export class BreakoutGame {
     this.missResetAt = 0;
   }
 
+  setPaddleControl(vision) {
+    if (this.settings.manualControl.enabled) {
+      this._applyProportionalControl(this.settings.manualControl.position / 50 - 1, 1);
+      return;
+    }
+    this.setVisionControl(vision);
+  }
+
   setVisionControl({ bias }) {
     if (this.settings.vision.controlMode === 'proportional') {
       this._applyProportionalControl(bias);
@@ -121,8 +129,7 @@ export class BreakoutGame {
     this.lastInDeadZone = false;
   }
 
-  _applyProportionalControl(bias) {
-    const { sensitivity } = this.settings.vision;
+  _applyProportionalControl(bias, sensitivity = this.settings.vision.sensitivity) {
     const minX = 18;
     const maxX = this.width - this.paddle.width - 18;
     const centerX = (minX + maxX) / 2;

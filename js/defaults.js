@@ -62,4 +62,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
     maximumOpacity: 1,
     jitter: 18,
   },
+  manualControl: {
+    enabled: false,
+    position: 50,
+  },
 });
