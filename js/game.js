@@ -2,6 +2,8 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
+const PADDLE_RESPONSE_SECONDS = 0.12;
+
 export class BreakoutGame {
   constructor(width, height, audio) {
     this.width = width;
@@ -169,10 +171,12 @@ export class BreakoutGame {
     const stepDistance = Math.max(this.ball.radius * 0.5, 2);
     const steps = Math.min(Math.max(Math.ceil(travel / stepDistance), 1), 120);
     const stepDelta = delta / steps;
+    // Time-based easing filters target jitter without depending on frame rate or ball substeps.
+    const paddleFollow = -Math.expm1(-stepDelta / PADDLE_RESPONSE_SECONDS);
     for (let step = 0; step < steps; step += 1) {
       const maxPaddleStep = this.paddle.travelSpeed * stepDelta;
       this.paddle.x += clamp(
-        this.paddle.targetX - this.paddle.x,
+        (this.paddle.targetX - this.paddle.x) * paddleFollow,
         -maxPaddleStep,
         maxPaddleStep,
       );
