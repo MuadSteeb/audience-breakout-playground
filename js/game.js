@@ -327,6 +327,7 @@ export class BreakoutGame {
 
   snapshot() {
     return {
+      physics: this.settings ? { ...this.settings.physics } : null,
       running: this.running,
       paused: this.paused,
       score: this.score,

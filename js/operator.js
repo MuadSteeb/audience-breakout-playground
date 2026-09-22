@@ -26,6 +26,7 @@ const presetName = document.querySelector('#presetName');
 const presetSelect = document.querySelector('#presetSelect');
 const formMessage = document.querySelector('#formMessage');
 const importPresetInput = document.querySelector('#importPresetInput');
+const physicsSyncStatus = document.querySelector('#physicsSyncStatus');
 
 let settings = loadSettings();
 let presets = loadPresets();
@@ -34,6 +35,7 @@ let updateHandle = null;
 let localRevision = 1;
 let audienceRevision = 0;
 let lastLocalEditAt = 0;
+let latestRuntime = null;
 
 function setMessage(message, isError = false) {
   formMessage.textContent = message;
@@ -65,6 +67,32 @@ function populateForm({ skipActive = true } = {}) {
   }
   refreshOutputs();
   syncModeAwareControls();
+  updatePhysicsStatus();
+}
+
+function updatePhysicsStatus() {
+  if (!physicsSyncStatus) return;
+  let state = 'applied';
+  let message;
+  if (Date.now() - lastAudienceAt >= 2200) {
+    state = 'offline';
+    message = 'Not connected: changes are not reaching the game. Open Audience in the same browser.';
+  } else if (!latestRuntime?.physics) {
+    state = 'unconfirmed';
+    message = 'Refresh Audience View to confirm that physics changes are applied.';
+  } else if (!Object.entries(settings.physics).every(([key, value]) => latestRuntime.physics[key] === value)) {
+    state = 'pending';
+    message = 'Waiting for Audience View to apply these physics settings.';
+  } else if (!latestRuntime.running) {
+    message = 'Physics settings applied. Start the camera or demo to see movement.';
+  } else if (latestRuntime.paused) {
+    message = 'Physics settings applied. Resume the paused game to see movement.';
+  } else {
+    message = 'Physics settings applied to the running game.';
+  }
+  physicsSyncStatus.dataset.state = state;
+  physicsSyncStatus.classList.toggle('error', state !== 'applied');
+  if (physicsSyncStatus.textContent !== message) physicsSyncStatus.textContent = message;
 }
 
 function syncModeAwareControls() {
@@ -147,10 +175,12 @@ function updateConnection() {
   document.querySelectorAll('.audience-command').forEach((button) => {
     button.disabled = !connected;
   });
+  updatePhysicsStatus();
 }
 
 function updateRuntime(runtime) {
   lastAudienceAt = Date.now();
+  if (runtime) latestRuntime = runtime;
   updateConnection();
   if (!runtime) {
     return;

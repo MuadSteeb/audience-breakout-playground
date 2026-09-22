@@ -81,6 +81,8 @@
 
         <fieldset>
           <legend>Game physics</legend>
+          <small id="physicsSyncStatus" class="form-message error" role="status">Not connected: changes are not reaching the game. Open Audience in the same browser.</small>
+          <small>Hit speed-up applies on paddle bounces. Paddle speed limits movement while steering; time scale affects both ball and paddle.</small>
           <label data-output="physics.ballSpeed">Ball speed <output></output>
             <input name="physics.ballSpeed" type="range" min="60" max="600" step="5" />
           </label>
