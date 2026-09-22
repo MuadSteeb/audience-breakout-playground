@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audience Breakout - Audience</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="audience-page">
+    <main class="audience-shell">
+      <header class="audience-header" id="audienceHeader">
+        <div>
+          <p class="eyebrow" id="audienceEyebrow">Computer vision demo</p>
+          <h1 id="audienceTitle">Breakout Vision</h1>
+        </div>
+        <div class="score-pill" id="scorePanel">
+          <span>Score</span>
+          <strong id="score">0</strong>
+        </div>
+      </header>
+
+      <section class="stage-shell">
+        <video id="webcam" autoplay playsinline muted></video>
+        <img id="demoImage" src="./assets/audience-placeholder.png" alt="" hidden />
+        <canvas id="gameCanvas" width="900" height="500" aria-label="Breakout game"></canvas>
+        <div class="startup-panel" id="startupPanel">
+          <h2>Ready for the audience</h2>
+          <label class="camera-select" for="cameraSelect">
+            <span>Camera</span>
+            <select id="cameraSelect">
+              <option value="">Front camera (default)</option>
+            </select>
+          </label>
+          <div class="button-row">
+            <button class="button primary" id="startCameraButton">Start camera</button>
+            <button class="button secondary" id="startDemoButton">Use demo mode</button>
+          </div>
+        </div>
+      </section>
+      <div class="stage-message" id="stageMessage">Move together. Break everything.</div>
+    </main>
+    <script type="module" src="./js/audience.js"></script>
+  </body>
+</html>

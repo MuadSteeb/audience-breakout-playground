@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Audience Breakout - Operator</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body class="operator-page">
+    <header class="operator-topbar">
+      <div>
+        <p class="eyebrow">Control room</p>
+        <h1>Audience Breakout</h1>
+      </div>
+      <div class="connection-card">
+        <span class="status-dot" id="connectionDot"></span>
+        <div>
+          <strong id="connectionLabel">Waiting for audience</strong>
+          <small id="runtimeStatus">No runtime snapshot received</small>
+        </div>
+      </div>
+      <div class="button-row">
+        <a class="button secondary" href="./audience.html" target="_blank">Open audience</a>
+        <button class="button secondary" id="resetDefaultsButton">Factory defaults</button>
+      </div>
+    </header>
+
+    <main class="operator-layout">
+      <section class="telemetry-panel">
+        <div><span>Game</span><strong id="gameState">Stopped</strong></div>
+        <div><span>Camera</span><strong id="cameraState">Offline</strong></div>
+        <div><span>Score</span><strong id="operatorScore">0</strong></div>
+        <div><span>Vision L / R</span><strong id="visionCounts">0 / 0</strong></div>
+        <div><span>Bias</span><strong id="visionBias">0%</strong></div>
+      </section>
+
+      <section class="command-panel">
+        <button class="button primary audience-command" data-command="start-camera">Start camera</button>
+        <button class="button secondary audience-command" data-command="start-demo">Demo mode</button>
+        <button class="button secondary audience-command" data-command="toggle-pause">Pause / resume</button>
+        <button class="button secondary audience-command" data-command="reset-ball">Reset ball</button>
+        <button class="button secondary audience-command" data-command="reset-board">Reset board</button>
+        <button class="button danger audience-command" data-command="reset-score">Reset score</button>
+      </section>
+
+      <form id="operatorForm" class="control-grid">
+        <fieldset>
+          <legend>Text and visibility</legend>
+          <label>Title <input name="appearance.title" type="text" /></label>
+          <label>Eyebrow <input name="appearance.eyebrow" type="text" /></label>
+          <label>Stage message <input name="appearance.message" type="text" /></label>
+          <label class="toggle"><input name="appearance.showScore" type="checkbox" /> Show score</label>
+          <label class="toggle"><input name="appearance.showMessage" type="checkbox" /> Show message</label>
+          <label class="toggle"><input name="appearance.showWebcam" type="checkbox" /> Show webcam</label>
+          <label class="toggle"><input name="appearance.mirrorWebcam" type="checkbox" /> Mirror webcam</label>
+          <label class="toggle"><input name="appearance.showCrowd" type="checkbox" /> Show crowd overlay</label>
+          <label class="toggle"><input name="appearance.showBricks" type="checkbox" /> Show bricks</label>
+          <label class="toggle"><input name="appearance.showPaddle" type="checkbox" /> Show paddle</label>
+          <label class="toggle"><input name="appearance.showBall" type="checkbox" /> Show ball</label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Colors and audio</legend>
+          <label>Ball <input name="appearance.ballColor" type="color" /></label>
+          <label>Paddle <input name="appearance.paddleColor" type="color" /></label>
+          <label>Stage <input name="appearance.stageColor" type="color" /></label>
+          <label>Text <input name="appearance.textColor" type="color" /></label>
+          <label>Brick low <input name="appearance.brickLowColor" type="color" /></label>
+          <label>Brick high <input name="appearance.brickHighColor" type="color" /></label>
+          <label data-output="appearance.webcamOpacity">
+            Webcam opacity <output></output>
+            <input name="appearance.webcamOpacity" type="range" min="0" max="1" step="0.05" />
+          </label>
+          <label class="toggle"><input name="audio.muted" type="checkbox" /> Mute audio</label>
+          <label data-output="audio.volume">
+            Volume <output></output>
+            <input name="audio.volume" type="range" min="0" max="1" step="0.05" />
+          </label>
+          <label class="toggle"><input name="appearance.showLightOverlay" type="checkbox" /> Show identified light overlay</label>
+          <small>Draws the pink pixel overlay of matched lights on the audience screen (same dots as the diagnostics overlay, without the rest of the diagnostics chrome).</small>
+        </fieldset>
+
+        <fieldset>
+          <legend>Game physics</legend>
+          <label data-output="physics.ballSpeed">Ball speed <output></output>
+            <input name="physics.ballSpeed" type="range" min="60" max="600" step="10" />
+          </label>
+          <label data-output="physics.speedUp">Hit speed-up <output></output>
+            <input name="physics.speedUp" type="range" min="1" max="1.15" step="0.01" />
+          </label>
+          <label data-output="physics.timeScale">Time scale <output></output>
+            <input name="physics.timeScale" type="range" min="0.1" max="2" step="0.05" />
+          </label>
+          <label data-output="physics.ballSize">Ball size <output></output>
+            <input name="physics.ballSize" type="range" min="8" max="60" step="1" />
+          </label>
+          <label data-output="physics.paddleSpeed">Paddle speed <output></output>
+            <input name="physics.paddleSpeed" type="range" min="60" max="1400" step="20" />
+          </label>
+          <label data-output="physics.paddleWidth">Paddle width <output></output>
+            <input name="physics.paddleWidth" type="range" min="60" max="360" step="4" />
+          </label>
+          <label data-output="physics.paddleHeight">Paddle height <output></output>
+            <input name="physics.paddleHeight" type="range" min="8" max="48" step="2" />
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Vision tuning</legend>
+          <label>Control mode
+            <select name="vision.controlMode">
+              <option value="proportional">Proportional (paddle follows bias)</option>
+              <option value="edge">Edge (paddle drives toward the leaning side)</option>
+            </select>
+          </label>
+          <small>Proportional maps bias directly to paddle position; dead zone only applies in edge mode.</small>
+          <label>Target color <input name="vision.targetColor" type="color" /></label>
+          <label data-output="vision.tolerance">Color tolerance <output></output>
+            <input name="vision.tolerance" type="range" min="10" max="255" step="1" />
+          </label>
+          <label data-output="vision.minimumStrength">Minimum strength <output></output>
+            <input name="vision.minimumStrength" type="range" min="0" max="255" step="1" />
+          </label>
+          <label data-output="vision.deadZone">Dead zone <output></output>
+            <input name="vision.deadZone" type="range" min="0" max="0.8" step="0.01" />
+          </label>
+          <label data-output="vision.sensitivity">Sensitivity <output></output>
+            <input name="vision.sensitivity" type="range" min="0.1" max="4" step="0.1" />
+          </label>
+          <small id="sensitivityHint">Edge mode: sensitivity scales how fast the paddle drives to the far wall.</small>
+          <label data-output="vision.sampleStride">Sample stride <output></output>
+            <input name="vision.sampleStride" type="range" min="1" max="12" step="1" />
+          </label>
+          <label>Perspective gain
+            <span class="range-with-number">
+              <input name="vision.perspectiveGain" type="range" min="0" max="4" step="0.05" />
+              <input name="vision.perspectiveGain" type="number" min="0" max="4" step="0.05" />
+            </span>
+          </label>
+          <small>Boosts lights that appear higher in the webcam feed (i.e., people farther from the camera). 0 = uniform weighting; higher = stronger top-of-frame boost.</small>
+          <label>Side bias
+            <span class="range-with-number">
+              <input name="vision.sideBias" type="range" min="-200" max="200" step="1" />
+              <input name="vision.sideBias" type="number" min="-200" max="200" step="1" />
+            </span>
+          </label>
+          <small>Subtracts a fixed amount from one side&rsquo;s vision count before it drives the paddle. Negative values subtract from LEFT; positive values subtract from RIGHT. 0 = no bias.</small>
+        </fieldset>
+
+        <fieldset>
+          <legend>Diagnostics</legend>
+          <label class="toggle"><input name="appearance.showDiagnostics" type="checkbox" /> Show diagnostics overlay</label>
+          <small>Draws the left/right sample regions, live counts, matched pixels, and where the paddle is heading given the current bias and dead zone.</small>
+        </fieldset>
+
+        <fieldset>
+          <legend>Crowd simulator</legend>
+          <label class="toggle"><input name="crowd.enabled" type="checkbox" /> Enable simulator</label>
+          <label data-output="crowd.leftCount">Left blocks <output></output>
+            <input name="crowd.leftCount" type="range" min="0" max="300" step="1" />
+          </label>
+          <label data-output="crowd.rightCount">Right blocks <output></output>
+            <input name="crowd.rightCount" type="range" min="0" max="300" step="1" />
+          </label>
+          <label>Crowd color <input name="crowd.color" type="color" /></label>
+          <label data-output="crowd.blockSize">Block size <output></output>
+            <input name="crowd.blockSize" type="range" min="2" max="24" step="1" />
+          </label>
+          <label data-output="crowd.minimumOpacity">Minimum opacity <output></output>
+            <input name="crowd.minimumOpacity" type="range" min="0.05" max="1" step="0.05" />
+          </label>
+          <label data-output="crowd.maximumOpacity">Maximum opacity <output></output>
+            <input name="crowd.maximumOpacity" type="range" min="0.05" max="1" step="0.05" />
+          </label>
+          <label data-output="crowd.jitter">Movement <output></output>
+            <input name="crowd.jitter" type="range" min="0" max="40" step="1" />
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Presets</legend>
+          <label>Preset name <input id="presetName" type="text" placeholder="Event setup" /></label>
+          <div class="button-row wrap">
+            <button class="button primary" id="savePresetButton" type="button">Save</button>
+            <button class="button secondary" id="loadPresetButton" type="button">Load</button>
+            <button class="button secondary" id="renamePresetButton" type="button">Rename</button>
+            <button class="button danger" id="deletePresetButton" type="button">Delete</button>
+          </div>
+          <label>Saved presets
+            <select id="presetSelect"><option value="">No saved presets</option></select>
+          </label>
+          <div class="button-row wrap">
+            <button class="button secondary" id="exportPresetButton" type="button">Export JSON</button>
+            <label class="button secondary file-button">Import JSON
+              <input id="importPresetInput" type="file" accept="application/json,.json" />
+            </label>
+          </div>
+          <p class="form-message" id="formMessage" aria-live="polite"></p>
+        </fieldset>
+      </form>
+    </main>
+    <script type="module" src="./js/operator.js"></script>
+  </body>
+</html>
