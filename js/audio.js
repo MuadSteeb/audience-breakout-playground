@@ -24,7 +24,7 @@ export class GameAudio {
   }
 
   play(name) {
-    if (this.settings.muted || this.context?.state !== 'running') {
+    if (this.settings.muted || this.settings.volume === 0 || this.context?.state !== 'running') {
       return;
     }
     const tones = {

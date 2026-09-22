@@ -79,6 +79,9 @@ function applySettings(nextSettings, revision) {
   scoreLabels.forEach((label) => { label.hidden = !settings.appearance.showScore; });
   document.body.style.backgroundColor = settings.appearance.stageColor;
   document.body.style.color = settings.appearance.textColor;
+  document.body.style.setProperty('--bg', settings.appearance.stageColor);
+  document.body.style.setProperty('--text', settings.appearance.textColor);
+  document.body.style.setProperty('--muted', settings.appearance.textColor);
   stageMessage.style.color = settings.appearance.textColor;
 }
 
@@ -185,6 +188,8 @@ async function startCamera({ remote = false } = {}) {
   }
   if (remote) {
     pendingCameraStart = true;
+    startupPanel.classList.remove('hidden');
+    startCameraButton.focus();
     setStatus('Operator requested camera start. Click Start camera in this tab.');
     return;
   }
@@ -237,6 +242,8 @@ async function startCamera({ remote = false } = {}) {
 async function startDemo({ remote = false } = {}) {
   if (remote && !audioReady && audio.context === null) {
     pendingDemoStart = true;
+    startupPanel.classList.remove('hidden');
+    startDemoButton.focus();
     setStatus('Operator requested demo mode. Click Use demo mode in this tab.');
     return;
   }

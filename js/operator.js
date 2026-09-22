@@ -53,7 +53,7 @@ function populateForm({ skipActive = true } = {}) {
     if (!input.name || !input.name.includes('.')) {
       continue;
     }
-    if (skipActive && input === active) {
+    if (skipActive && input === active && ['text', 'number'].includes(input.type)) {
       continue;
     }
     const value = getPath(settings, input.name);
@@ -104,13 +104,25 @@ function refreshPresets() {
   }
 }
 
+function persistPresets(nextPresets) {
+  if (!savePresets(nextPresets)) {
+    setMessage('Unable to save presets locally.', true);
+    return false;
+  }
+  presets = nextPresets;
+  refreshPresets();
+  return true;
+}
+
 function flushSettingsUpdate() {
   updateHandle = null;
   channel.send('settings-update', { settings, settingsRevision: localRevision });
 }
 
 function queueSettingsUpdate() {
-  saveSettings(settings);
+  if (!saveSettings(settings)) {
+    setMessage('Unable to save settings locally. Live changes are still sent to the audience.', true);
+  }
   lastLocalEditAt = Date.now();
   if (updateHandle !== null) {
     return;
@@ -120,12 +132,12 @@ function queueSettingsUpdate() {
 
 function replaceSettings(nextSettings, message) {
   settings = normalizeSettings(nextSettings);
-  localRevision += 1;
+  localRevision = Math.max(localRevision, audienceRevision) + 1;
   populateForm({ skipActive: false });
-  queueSettingsUpdate();
   if (message) {
     setMessage(message);
   }
+  queueSettingsUpdate();
 }
 
 function updateConnection() {
@@ -163,7 +175,7 @@ function shouldAcceptRemoteSettings(revision) {
   if (typeof revision !== 'number') {
     return false;
   }
-  if (revision <= audienceRevision) {
+  if (revision < Math.max(audienceRevision, localRevision)) {
     return false;
   }
   if (Date.now() - lastLocalEditAt < EDIT_LOCKOUT_MS) {
@@ -187,7 +199,7 @@ const channel = createGameChannel('operator', (message) => {
       saveSettings(settings);
       localRevision = revision;
       audienceRevision = revision;
-      populateForm();
+      populateForm({ skipActive: false });
     } else if (typeof revision === 'number' && revision > audienceRevision) {
       audienceRevision = revision;
     }
@@ -195,7 +207,7 @@ const channel = createGameChannel('operator', (message) => {
     return;
   }
   if (message.type === 'ack' && message.payload?.kind === 'settings') {
-    audienceRevision = message.payload.settingsRevision ?? audienceRevision;
+    audienceRevision = Math.max(audienceRevision, message.payload.settingsRevision ?? 0);
     return;
   }
   if (message.type === 'rejected' || message.type === 'runtime-error') {
@@ -208,6 +220,9 @@ form.addEventListener('input', (event) => {
   if (!input.name || !input.name.includes('.')) {
     return;
   }
+  if (input.type === 'number' && input.value === '') {
+    return;
+  }
   try {
     const value = input.type === 'checkbox'
       ? input.checked
@@ -215,14 +230,17 @@ form.addEventListener('input', (event) => {
         ? Number(input.value)
         : input.value;
     settings = applySetting(settings, input.name, value);
-    localRevision += 1;
+    localRevision = Math.max(localRevision, audienceRevision) + 1;
     populateForm();
-    queueSettingsUpdate();
     setMessage('');
+    queueSettingsUpdate();
   } catch (error) {
     setMessage(error.message, true);
   }
 });
+
+form.addEventListener('focusout', () => populateForm({ skipActive: false }));
+form.addEventListener('submit', (event) => event.preventDefault());
 
 document.querySelectorAll('[data-command]').forEach((button) => {
   button.addEventListener('click', () => {
@@ -240,19 +258,16 @@ document.querySelector('#savePresetButton').addEventListener('click', () => {
     setMessage('Enter a preset name before saving.', true);
     return;
   }
-  presets[name.slice(0, 80)] = normalizeSettings(settings);
-  if (!savePresets(presets)) {
-    setMessage('Unable to save preset locally.', true);
+  if (!persistPresets({ ...presets, [name.slice(0, 80)]: normalizeSettings(settings) })) {
     return;
   }
-  refreshPresets();
   presetSelect.value = name.slice(0, 80);
   setMessage(`Saved preset "${name.slice(0, 80)}".`);
 });
 
 document.querySelector('#loadPresetButton').addEventListener('click', () => {
   const selected = presetSelect.value;
-  if (!selected || !presets[selected]) {
+  if (!selected || !Object.hasOwn(presets, selected)) {
     setMessage('Choose a preset to load.', true);
     return;
   }
@@ -263,7 +278,7 @@ document.querySelector('#loadPresetButton').addEventListener('click', () => {
 document.querySelector('#renamePresetButton').addEventListener('click', () => {
   const selected = presetSelect.value;
   const nextName = presetName.value.trim().slice(0, 80);
-  if (!selected || !presets[selected]) {
+  if (!selected || !Object.hasOwn(presets, selected)) {
     setMessage('Choose a preset to rename.', true);
     return;
   }
@@ -271,29 +286,28 @@ document.querySelector('#renamePresetButton').addEventListener('click', () => {
     setMessage('Enter the new preset name.', true);
     return;
   }
-  if (nextName !== selected && presets[nextName]) {
+  if (nextName !== selected && Object.hasOwn(presets, nextName)) {
     setMessage(`A preset named "${nextName}" already exists.`, true);
     return;
   }
-  presets[nextName] = presets[selected];
+  const nextPresets = { ...presets, [nextName]: presets[selected] };
   if (nextName !== selected) {
-    delete presets[selected];
+    delete nextPresets[selected];
   }
-  savePresets(presets);
-  refreshPresets();
+  if (!persistPresets(nextPresets)) return;
   presetSelect.value = nextName;
   setMessage(`Renamed preset to "${nextName}".`);
 });
 
 document.querySelector('#deletePresetButton').addEventListener('click', () => {
   const selected = presetSelect.value;
-  if (!selected || !presets[selected]) {
+  if (!selected || !Object.hasOwn(presets, selected)) {
     setMessage('Choose a preset to delete.', true);
     return;
   }
-  delete presets[selected];
-  savePresets(presets);
-  refreshPresets();
+  const nextPresets = { ...presets };
+  delete nextPresets[selected];
+  if (!persistPresets(nextPresets)) return;
   presetName.value = '';
   setMessage(`Deleted preset "${selected}".`);
 });
@@ -318,9 +332,7 @@ importPresetInput.addEventListener('change', async () => {
   }
   try {
     const imported = parsePresetDocument(await file.text());
-    presets[imported.name] = imported.settings;
-    savePresets(presets);
-    refreshPresets();
+    if (!persistPresets({ ...presets, [imported.name]: imported.settings })) return;
     presetSelect.value = imported.name;
     presetName.value = imported.name;
     replaceSettings(imported.settings, `Imported preset "${imported.name}".`);

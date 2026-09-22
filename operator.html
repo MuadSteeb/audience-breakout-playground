@@ -49,7 +49,7 @@
           <label>Stage message <input name="appearance.message" type="text" /></label>
           <label class="toggle"><input name="appearance.showScore" type="checkbox" /> Show score on both side panels</label>
           <label class="toggle"><input name="appearance.showMessage" type="checkbox" /> Show message</label>
-          <label class="toggle"><input name="appearance.showWebcam" type="checkbox" /> Show webcam</label>
+          <label class="toggle"><input name="appearance.showWebcam" type="checkbox" /> Show webcam on playfield</label>
           <label class="toggle"><input name="appearance.mirrorWebcam" type="checkbox" /> Mirror webcam</label>
           <label class="toggle"><input name="appearance.showCrowd" type="checkbox" /> Show audience light particles</label>
           <label class="toggle"><input name="appearance.showBricks" type="checkbox" /> Show bricks</label>
@@ -66,9 +66,10 @@
           <label>Brick low <input name="appearance.brickLowColor" type="color" /></label>
           <label>Brick high <input name="appearance.brickHighColor" type="color" /></label>
           <label data-output="appearance.webcamOpacity">
-            Webcam opacity <output></output>
+            Playfield webcam opacity <output></output>
             <input name="appearance.webcamOpacity" type="range" min="0" max="1" step="0.05" />
           </label>
+          <small>The split side-panel camera stays at 25% opacity while live. Mirror webcam applies to both camera views and steering.</small>
           <label class="toggle"><input name="audio.muted" type="checkbox" /> Mute audio</label>
           <label data-output="audio.volume">
             Volume <output></output>
