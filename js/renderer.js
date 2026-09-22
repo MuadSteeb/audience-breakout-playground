@@ -392,7 +392,7 @@ export class GameRenderer {
       context.restore();
 
       const controlMode = settings.manualControl.enabled ? 'manual' : settings.vision.controlMode;
-      const deadZoneLine = controlMode !== 'edge'
+      const deadZoneLine = controlMode === 'manual'
         ? `dead zone: n/a (${controlMode})`
         : paddleIntent.inDeadZone
           ? `dead zone: yes (|bias| ≤ ${settings.vision.deadZone})`

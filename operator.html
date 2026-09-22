@@ -112,7 +112,7 @@
               <option value="edge">Edge (paddle drives toward the leaning side)</option>
             </select>
           </label>
-          <small>Proportional maps bias directly to paddle position; dead zone only applies in edge mode.</small>
+          <small>Proportional maps active bias to paddle position. In both vision modes, neutral input within the dead zone holds the paddle in place instead of returning it to center.</small>
           <label>Target color <input name="vision.targetColor" type="color" /></label>
           <label data-output="vision.tolerance">Color tolerance <output></output>
             <input name="vision.tolerance" type="range" min="10" max="255" step="1" />

@@ -70,10 +70,8 @@ function populateForm({ skipActive = true } = {}) {
 function syncModeAwareControls() {
   const proportional = settings.vision.controlMode === 'proportional';
   for (const input of form.elements) {
-    if (input.name === 'vision.deadZone' || input.name === 'manualControl.position') {
-      const disabled = input.name === 'vision.deadZone'
-        ? proportional
-        : !settings.manualControl.enabled;
+    if (input.name === 'manualControl.position') {
+      const disabled = !settings.manualControl.enabled;
       input.disabled = disabled;
       const label = input.closest('label');
       if (label) {
