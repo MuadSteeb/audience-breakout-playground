@@ -77,7 +77,8 @@ function updatePhysicsStatus() {
   if (Date.now() - lastAudienceAt >= 2200) {
     state = 'offline';
     message = 'Not connected: changes are not reaching the game. Open Audience in the same browser.';
-  } else if (!latestRuntime?.physics) {
+  } else if (!latestRuntime?.physics
+    || Object.keys(settings.physics).some((key) => !Object.hasOwn(latestRuntime.physics, key))) {
     state = 'unconfirmed';
     message = 'Refresh Audience View to confirm that physics changes are applied.';
   } else if (!Object.entries(settings.physics).every(([key, value]) => latestRuntime.physics[key] === value)) {

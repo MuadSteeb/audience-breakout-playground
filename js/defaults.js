@@ -39,6 +39,7 @@ export const DEFAULT_SETTINGS = Object.freeze({
     timeScale: 1,
     ballSize: 20,
     paddleSpeed: 350,
+    paddleSpeedScale: 1,
     paddleWidth: 140,
     paddleHeight: 20,
   },

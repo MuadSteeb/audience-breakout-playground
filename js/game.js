@@ -159,7 +159,10 @@ export class BreakoutGame {
     } else {
       this._applyEdgeControl(bias);
     }
-    const speedFraction = clamp((magnitude - deadZone) / (1 - deadZone) * sensitivity, 0, 1);
+    const speedFraction = clamp(
+      (magnitude - deadZone) / (1 - deadZone) * sensitivity * this.settings.physics.paddleSpeedScale,
+      0, 1,
+    );
     this.paddle.travelSpeed = this.settings.physics.paddleSpeed * speedFraction;
   }
 

@@ -35,6 +35,7 @@ const RULES = {
   'physics.timeScale': { type: 'number', min: 0.1, max: 2 },
   'physics.ballSize': { type: 'number', min: 8, max: 60 },
   'physics.paddleSpeed': { type: 'number', min: 60, max: 1400 },
+  'physics.paddleSpeedScale': { type: 'number', min: 0.1, max: 4 },
   'physics.paddleWidth': { type: 'number', min: 60, max: 360 },
   'physics.paddleHeight': { type: 'number', min: 8, max: 48 },
   'vision.targetColor': { type: 'color' },
