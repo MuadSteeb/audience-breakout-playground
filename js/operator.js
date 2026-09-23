@@ -110,7 +110,7 @@ function syncModeAwareControls() {
   const sensitivityHint = document.querySelector('#sensitivityHint');
   if (sensitivityHint) {
     sensitivityHint.textContent = proportional
-      ? 'Proportional mode: sensitivity scales the paddle\u2019s target displacement.'
+      ? 'Proportional mode: sensitivity scales the paddle\u2019s target displacement and movement speed.'
       : 'Edge mode: sensitivity scales how fast the paddle drives to the far wall.';
   }
 }

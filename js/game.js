@@ -145,7 +145,9 @@ export class BreakoutGame {
   }
 
   setVisionControl({ bias }) {
-    if (Math.abs(bias) <= this.settings.vision.deadZone) {
+    const { deadZone, sensitivity } = this.settings.vision;
+    const magnitude = Math.abs(bias);
+    if (magnitude <= deadZone) {
       this.paddle.targetX = this.paddle.x;
       this.paddle.travelSpeed = 0;
       this.lastVisionBias = bias;
@@ -154,16 +156,14 @@ export class BreakoutGame {
     }
     if (this.settings.vision.controlMode === 'proportional') {
       this._applyProportionalControl(bias);
-      return;
+    } else {
+      this._applyEdgeControl(bias);
     }
-    this._applyEdgeControl(bias);
+    const speedFraction = clamp((magnitude - deadZone) / (1 - deadZone) * sensitivity, 0, 1);
+    this.paddle.travelSpeed = this.settings.physics.paddleSpeed * speedFraction;
   }
 
   _applyEdgeControl(bias) {
-    const { deadZone, sensitivity } = this.settings.vision;
-    const magnitude = Math.abs(bias);
-    const normalized = clamp(((magnitude - deadZone) / (1 - deadZone)) * sensitivity, 0.1, 1);
-    this.paddle.travelSpeed = this.settings.physics.paddleSpeed * normalized;
     this.paddle.targetX = bias < 0 ? 18 : this.width - this.paddle.width - 18;
     this.lastVisionBias = bias;
     this.lastInDeadZone = false;
